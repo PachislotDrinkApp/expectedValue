@@ -8,10 +8,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.AdapterView;
 
 import org.w3c.dom.Text;
 
@@ -47,8 +49,20 @@ public class MainActivity extends Activity implements View.OnClickListener{
             cursor.moveToNext();
         }
 
-        Spinner spinner = (Spinner)findViewById(R.id.name_spinner);
+        final Spinner spinner = (Spinner)findViewById(R.id.name_spinner);
         spinner.setAdapter(names);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                int whichName = spinner.getSelectedItemPosition();
+                Log.d("SelectedItemNumber", String.valueOf(whichName));
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+
+            }
+        });
 
         mydb.close();
     }
