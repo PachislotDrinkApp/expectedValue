@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -34,21 +36,19 @@ public class MainActivity extends Activity implements View.OnClickListener{
             mydb.execSQL("INSERT INTO name_slot (name) SELECT '"+aa+"'");
         }
 
-//         mydb.execSQL("INSERT INTO name_slot (name) SELECT ('GOD') FROM name_slot WHERE NOT EXISTS(SELECT COUNT(*) FROM name_slot WHERE name = ('GOD'))");
-
-//        mydb.execSQL("INSERT INTO name_slot (name) SELECT ('GOD') FROM name_slot WHERE NOT EXISTS(SELECT * FROM name_slot WHERE name = ('GOD'))");
-
-        String query_select = "SELECT * FROM name_slot";
+        String query_select = "SELECT name FROM name_slot";
         Cursor cursor = mydb.rawQuery(query_select, null);
+        cursor.moveToFirst();
 
-        String result_str="";
+        ArrayAdapter names = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
 
-        while (cursor.moveToNext()){
-            int index_name = cursor.getColumnIndex("name");
-            String name = cursor.getString(index_name);
-            result_str +="NAME:" + name;
+        for (int i = 0; i < cursor.getCount(); i++) {
+            names.add(cursor.getColumnNames());
+            cursor.moveToNext();
         }
-        ((TextView)findViewById(R.id.textView)).setText(result_str);
+
+        Spinner spinner = (Spinner)findViewById(R.id.name_spinner);
+        spinner.setAdapter(names);
 
         mydb.close();
     }

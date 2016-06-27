@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">expectedvalue</string>
+
+    <string-array name="name_list">
+
+    </string-array>
 </resources>
