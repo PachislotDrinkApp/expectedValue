@@ -36,14 +36,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
             mydb.execSQL("INSERT INTO name_slot (name) SELECT '"+aa+"'");
         }
 
-        String query_select = "SELECT name FROM name_slot";
+        String query_select = "SELECT * FROM name_slot";
         Cursor cursor = mydb.rawQuery(query_select, null);
         cursor.moveToFirst();
 
         ArrayAdapter names = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
 
         for (int i = 0; i < cursor.getCount(); i++) {
-            names.add(cursor.getColumnNames());
+            names.add(cursor.getString(cursor.getColumnIndex("name")));
             cursor.moveToNext();
         }
 
