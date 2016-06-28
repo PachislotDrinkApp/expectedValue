@@ -39,8 +39,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     private View focusView;
     static SQLiteDatabase mydb;
-    static String[] nameList = new String[5];
-    static Integer[] numList = new Integer[5];
+    static String[] nameList;
+    static Integer[] numList;
     static int whichName;
     static EditText editText;
 
@@ -55,6 +55,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         Button resultBtn = (Button)findViewById(R.id.resultBtn);
         resultBtn.setOnClickListener(this);
+
+        checknumbers(getApplicationContext());
 
         parse(getApplicationContext());
 
@@ -131,6 +133,27 @@ public class MainActivity extends Activity implements View.OnClickListener{
             }
             InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
+
+    public static void checknumbers(Context context) {
+        AssetManager assetManager = context.getResources().getAssets();
+
+        try {
+            //CSVファイル読み込み
+            InputStream inputStream = assetManager.open("names.csv");
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String line = "";
+            int i = 0;
+            while (bufferedReader.readLine() != null) {
+                i++;
+            }
+            nameList = new String[i];
+            numList = new Integer[i];
+            bufferedReader.close();
+        } catch (IOException e) {
+
         }
     }
 
