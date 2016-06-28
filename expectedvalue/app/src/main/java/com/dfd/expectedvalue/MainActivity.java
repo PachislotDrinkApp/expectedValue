@@ -2,14 +2,19 @@ package com.dfd.expectedvalue;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.renderscript.ScriptGroup;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,13 +25,19 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
  * Created by a61-201405-2055 on 16/06/27.
  */
 public class MainActivity extends Activity implements View.OnClickListener{
 
+    private View focusView;
     static SQLiteDatabase mydb;
     static String[] nameList = new String[5];
     static Integer[] numList = new Integer[5];
@@ -39,23 +50,26 @@ public class MainActivity extends Activity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainactivity_layout);
 
+        focusView = findViewById(R.id.linearLayout);
+        focusView.requestFocus();
+
         Button resultBtn = (Button)findViewById(R.id.resultBtn);
         resultBtn.setOnClickListener(this);
 
-        nameList[0] = "AAA";
-        nameList[1] = "BBB";
-        nameList[2] = "CCC";
-        nameList[3] = "DDD";
-        nameList[4] = "EEE";
-
-        numList[0] = 123;
-        numList[1] = 456;
-        numList[2] = 789;
-        numList[3] = 147;
-        numList[4] = 258;
+        parse(getApplicationContext());
 
         insertDB();
 
+        editText = (EditText)findViewById(R.id.input_number);
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange (View view, boolean hasFocus) {
+                if ( hasFocus == false) {
+                    InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+            }
+        });
     }
 
     public void insertDB() {
@@ -65,9 +79,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         for (int i = 0; i < nameList.length; ++i) {
             long counters = DatabaseUtils.queryNumEntries(mydb, "name_slot", "name = '"+nameList[i]+"'");
-
-            if (counters == 0) {
-                mydb.execSQL("INSERT INTO name_slot (name, numbers) VALUES ('"+nameList[i]+"', "+numList[i]+")");
+            if (nameList[i] != null) {
+                if (counters == 0) {
+                    mydb.execSQL("INSERT INTO name_slot (name, numbers) VALUES ('"+nameList[i]+"', "+numList[i]+")");
+                }
             }
         }
 
@@ -114,6 +129,37 @@ public class MainActivity extends Activity implements View.OnClickListener{
             } else {
                 Toast.makeText(this, "ゲーム数を入力してください", Toast.LENGTH_SHORT).show();
             }
+            InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
+    }
+
+    public static void parse(Context context) {
+        AssetManager assetManager = context.getResources().getAssets();
+
+        try {
+            //CSVファイル読み込み
+            InputStream inputStream = assetManager.open("names.csv");
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String line = "";
+            int i = 0;
+            while ((line = bufferedReader.readLine()) != null) {
+                StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
+                nameList[i] = stringTokenizer.nextToken();
+                numList[i] = Integer.parseInt(stringTokenizer.nextToken());
+
+                i++;
+            }
+            bufferedReader.close();
+        } catch (IOException e) {
+
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        focusView.requestFocus();
+        return  super.onTouchEvent(event);
     }
 }
