@@ -20,7 +20,7 @@ public class DataBase extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         //テーブル作成
-        db.execSQL("CREATE TABLE IF NOT EXISTS name_slot (id INTEGER PRIMARY KEY, name STRING, numbers INTEGER)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS name_slot (id INTEGER PRIMARY KEY, name STRING, hatsu INTEGER, heikin INTEGER, tenjou INTEGER, tenjouonkei INTEGER, gamek INTEGER)");
     }
 
     @Override
