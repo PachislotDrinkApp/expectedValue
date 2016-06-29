@@ -1,17 +1,12 @@
 package com.dfd.expectedvalue;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.renderscript.ScriptGroup;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -22,13 +17,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -45,6 +36,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     static Integer[] tenjouList;
     static Integer[] tenjouonkeiList;
     static Integer[] games1kList;
+    static String[] onkeiList;
     static int whichName;
     static EditText editText;
 
@@ -87,7 +79,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             long counters = DatabaseUtils.queryNumEntries(mydb, "name_slot", "name = '" + nameList[i] + "'");
             if (nameList[i] != null) {
                 if (counters == 0) {
-                    mydb.execSQL("INSERT INTO name_slot (name, hatsu, heikin, tenjou, tenjouonkei, gamek) VALUES ('" + nameList[i] + "', " + hatsuList[i] + ", " + heikinList[i] + ", " + tenjouList[i] + ", " + tenjouonkeiList[i] + ", " + games1kList[i] + ")");
+                    mydb.execSQL("INSERT INTO name_slot (name, hatsu, heikin, tenjou, tenjouonkei, gamek, onkei) VALUES ('" + nameList[i] + "', " + hatsuList[i] + ", " + heikinList[i] + ", " + tenjouList[i] + ", " + tenjouonkeiList[i] + ", " + games1kList[i] + ", '"+ onkeiList[i] + "')");
                 }
             }
         }
@@ -99,7 +91,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         ArrayAdapter names = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
 
         for (int i = 0; i < cursor.getCount(); i++) {
-            names.add(cursor.getString(cursor.getColumnIndex("name")));
+            names.add("機種名 : " + cursor.getString(cursor.getColumnIndex("name")));
             cursor.moveToNext();
         }
 
@@ -132,29 +124,35 @@ public class MainActivity extends Activity implements View.OnClickListener {
             String inputNumbers = editText.getText().toString();
             if (inputNumbers.length() != 0) {
 
-                //汚い
-                double leftgames = tenjouList[whichName] - (Integer.parseInt(inputNumbers));
-                double onegame = (hatsuList[whichName]-1);
-                double nowgame = onegame/(hatsuList[whichName]);
-                double reachprob = (Math.pow(nowgame, leftgames))*100;
-                double onekprob = (1 - Math.pow(nowgame, games1kList[whichName]))*100;
-                double howmuch = (100 - reachprob) / onekprob;
-                double howmanymedals = howmuch * 50;
-                double tenkaku = tenjouonkeiList[whichName] - howmanymedals;
-                double tenget = tenkaku * reachprob / 100;
+                if ((Integer.parseInt(inputNumbers)) <= tenjouList[whichName]) {
+                    //汚い
+                    double leftgames = tenjouList[whichName] - (Integer.parseInt(inputNumbers));
+                    double onegame = (hatsuList[whichName]-1);
+                    double nowgame = onegame/(hatsuList[whichName]);
+                    double reachprob = (Math.pow(nowgame, leftgames))*100;
+                    double onekprob = (1 - Math.pow(nowgame, games1kList[whichName]))*100;
+                    double howmuch = (100 - reachprob) / onekprob;
+                    double howmanymedals = howmuch * 50;
+                    double tenkaku = tenjouonkeiList[whichName] - howmanymedals;
+                    double tenget = tenkaku * reachprob / 100;
 
-                int def = 50;
-                double sum = 0;
-                double sumnow = heikinList[whichName];
-                for (int i = 0; i <= howmuch; i++ ) {
-                    sumnow = sumnow - def;
-                    sum = sum + sumnow;
+                    int def = 50;
+                    double sum = 0;
+                    double sumnow = heikinList[whichName];
+                    for (int i = 0; i <= howmuch; i++ ) {
+                        sumnow = sumnow - def;
+                        sum = sum + sumnow;
+                    }
+
+                    double befget = sum * onekprob / 100;
+
+                    double resultOfMath = tenget + befget;
+                    onkeiList[whichName] = onkeiList[whichName].replaceAll("\"", "");
+                    ((TextView) findViewById(R.id.resultTextView)).setText("期待値\n" + String.valueOf(Math.round(resultOfMath)) + "枚\n" + "天井到達率\n" + String.valueOf(Math.round(reachprob)) + "%\n" + "恩恵\n" + onkeiList[whichName]);
+                } else {
+                    Toast.makeText(this, "天井ゲーム数を超えています", Toast.LENGTH_SHORT).show();
                 }
 
-                double befget = sum * onekprob / 100;
-
-                double resultOfMath = tenget + befget;
-                ((TextView) findViewById(R.id.resultTextView)).setText("期待値　: " + String.valueOf(resultOfMath) + "枚");
             } else {
                 Toast.makeText(this, "ゲーム数を入力してください", Toast.LENGTH_SHORT).show();
             }
@@ -182,6 +180,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             tenjouList = new Integer[i];
             tenjouonkeiList = new Integer[i];
             games1kList = new Integer[i];
+            onkeiList = new String[i];
             bufferedReader.close();
         } catch (IOException e) {
 
@@ -206,6 +205,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 tenjouList[i] = Integer.parseInt(stringTokenizer.nextToken());
                 tenjouonkeiList[i] = Integer.parseInt(stringTokenizer.nextToken());
                 games1kList[i] = Integer.parseInt(stringTokenizer.nextToken());
+                onkeiList[i] = stringTokenizer.nextToken();
 
                 i++;
             }
