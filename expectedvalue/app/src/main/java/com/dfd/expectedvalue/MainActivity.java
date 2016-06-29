@@ -151,10 +151,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     ((TextView) findViewById(R.id.resultTextView)).setText("期待値\n" + String.valueOf(Math.round(resultOfMath)) + "枚\n" + "天井到達率\n" + String.valueOf(Math.round(reachprob)) + "%\n" + "恩恵\n" + onkeiList[whichName]);
                 } else {
                     Toast.makeText(this, "天井ゲーム数を超えています", Toast.LENGTH_SHORT).show();
+                    ((TextView) findViewById(R.id.resultTextView)).setText("");
                 }
 
             } else {
                 Toast.makeText(this, "ゲーム数を入力してください", Toast.LENGTH_SHORT).show();
+                ((TextView) findViewById(R.id.resultTextView)).setText("");
             }
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
